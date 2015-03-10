@@ -60,6 +60,20 @@ app.post('/:type_token/:channel_token', function(req, res){
   });
 });
 
+//Delete messages
+app.post('/:type_token/:channel_token', function(req, res){
+  db.query("DELETE FROM messages WHERE message_text = $1 OR user_name = $2", [req.body.message_text, req.body.user_name], function(err, result) {
+    if (err) {
+      if (err.code == "23502") {
+        err.explanation = "Didn't get all of the parameters in the request body. Send user_name and message_text in the request body (remember this is a POST request)."
+      }
+      res.status(500).send(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
 //Start the actual server
 var server = app.listen(process.env.PORT, function () {
   //server is actually running!

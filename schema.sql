@@ -1,3 +1,7 @@
+CREATE DATABASE messagehub;
+
+\c messagehub;
+
 CREATE TABLE messages (
   type_token varchar(100) NOT NULL,
   channel_token varchar(100) NOT NULL,

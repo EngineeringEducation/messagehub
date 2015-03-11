@@ -1,0 +1,14 @@
+<table>
+    <tr>
+        <td>user_name</td>
+        <td>message_text</td>
+        <td>message_timestamp</td>
+    </tr>
+     <% for (var i=0; i < messages.length; i++){ %>
+        <tr>
+            <td><%=messages[i].user_name%></td>
+            <td><%=messages[i].message_text%></td>
+            <td><%=messages[i].message_timestamp%></td>
+        </tr>
+    <% } %>
+</table>

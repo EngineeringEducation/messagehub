@@ -2,6 +2,11 @@ var pg = require('pg');
 var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
+var ejs = require('ejs');
+
+app.use(express.static(__dirname + '/views'));
+
+app.set('view engine', 'ejs');
 
 // allows us to parse the incoming request body
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -24,16 +29,16 @@ app.get('/', function (req, res) {
 });
 
 //get all messages in a type's channel
-app.get('/:type_token/:channel_token', function (req, res) {
-  console.log(db);
-  db.query("SELECT type_token, channel_token, user_name, message_text, message_timestamp FROM messages WHERE type_token = $1 AND channel_token = $2", [req.params.type_token, req.params.channel_token], function(err, result) {
-    if (err) {
-      res.status(500).send(err);
-    } else {
-      res.send(result.rows);
-    }
-  })
-});
+// app.get('/:type_token/:channel_token', function (req, res) {
+//   console.log(db);
+//   db.query("SELECT type_token, channel_token, user_name, message_text, message_timestamp FROM messages WHERE type_token = $1 AND channel_token = $2", [req.params.type_token, req.params.channel_token], function(err, result) {
+//     if (err) {
+//       res.status(500).send(err);
+//     } else {
+//       res.send(result.rows);
+//     }
+//   })
+// });
 
 //get all channels by type
 app.get('/:type_token', function (req, res) {
@@ -45,6 +50,22 @@ app.get('/:type_token', function (req, res) {
     }
   })
 });
+
+//get all messages and displa in html
+app.get('/:type_token/:channel_token', function (req, res) {
+    db.query("SELECT user_name, message_text, message_timestamp FROM messages WHERE type_token = $1 ", [req.params.type_token], function(err, result) {
+    if (err) {
+      res.status(500).send(err);
+    } else {
+      console.log(result.rows);
+      res.render('table', { 'messages' : result.rows } )
+      // res.send(result.rows);
+    }
+  })
+});
+
+
+
 
 //Create a new message
 app.post('/:type_token/:channel_token', function(req, res){

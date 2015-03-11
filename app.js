@@ -2,13 +2,18 @@ var pg = require('pg');
 var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
+var ejs = require('ejs');
+
+app.set('view engine', 'ejs');
+app.use(express.static(__dirname + '/views'));
 
 // allows us to parse the incoming request body
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // Connects to postgres once, on server start
-var conString = process.env.DATABASE_URL || "postgres://localhost/action";
+
+var conString = process.env.DATABASE_URL || 3000;
 var db;
 pg.connect(conString, function(err, client) {
   if (err) {
@@ -20,7 +25,18 @@ pg.connect(conString, function(err, client) {
 
 // homepage
 app.get('/', function (req, res) {
-  res.send('Tradecraft messagehub API.')
+  res.send('Tradecraft Messagehub API')
+});
+
+//get all channels by type
+app.get('/:type_token', function (req, res) {
+    db.query("SELECT type_token, channel_token FROM messages WHERE type_token = $1 GROUP BY type_token, channel_token", [req.params.type_token], function(err, result) {
+    if (err) {
+      res.status(500).send(err);
+    } else {
+      res.send(result.rows);
+    }
+  })
 });
 
 //get all messages in a type's channel
@@ -35,13 +51,17 @@ app.get('/:type_token/:channel_token', function (req, res) {
   })
 });
 
-//get all channels by type
-app.get('/:type_token', function (req, res) {
-    db.query("SELECT type_token, channel_token FROM messages WHERE type_token = $1 GROUP BY type_token, channel_token", [req.params.type_token], function(err, result) {
+//return messages in html
+app.get('/:type_token/:channel_token/message', function (req, res) {
+  console.log(db);
+  db.query("SELECT user_name, message_text FROM messages WHERE type_token = $1 AND channel_token = $2", [req.params.type_token, req.params.channel_token], function(err, result) {
     if (err) {
       res.status(500).send(err);
     } else {
-      res.send(result.rows);
+      var messages = result.rows;
+      console.log(result.rows);
+      //res.send(messages);
+      res.render("messageList", {"messages" : messages});
     }
   })
 });
@@ -69,3 +89,6 @@ var server = app.listen(process.env.PORT, function () {
   console.log('Listening at http://%s:%s', host, port);
 
 });
+
+
+

@@ -12,7 +12,7 @@ var conString = process.env.DATABASE_URL || "postgres://localhost/action";
 var db;
 pg.connect(conString, function(err, client) {
   if (err) {
-    //console.log(err);
+    console.log(err);
   } else {
     db = client;
   }
@@ -25,8 +25,8 @@ app.get('/', function (req, res) {
 
 //get all messages in a type's channel
 app.get('/:type_token/:channel_token', function (req, res) {
-  //console.log(db);
-  db.query("SELECT type_token, channel_token, user_name, user_ip, message_text, message_timestamp FROM messages WHERE type_token = $1 AND channel_token = $2", [req.params.type_token, req.params.channel_token], function(err, result) {
+  console.log(db);
+  db.query("SELECT type_token, channel_token, user_name, user_ip, message_text, message_timestamp FROM messages WHERE type_token = $1 AND channel_token = $2 ORDER BY message_timestamp", [req.params.type_token, req.params.channel_token], function(err, result) {
     if (err) {
       res.status(500).send(err);
     } else {

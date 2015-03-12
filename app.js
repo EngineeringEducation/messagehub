@@ -12,7 +12,7 @@ var conString = process.env.DATABASE_URL || "postgres://localhost/action";
 var db;
 pg.connect(conString, function(err, client) {
   if (err) {
-    console.log(err);
+    //console.log(err);
   } else {
     db = client;
   }
@@ -25,8 +25,8 @@ app.get('/', function (req, res) {
 
 //get all messages in a type's channel
 app.get('/:type_token/:channel_token', function (req, res) {
-  console.log(db);
-  db.query("SELECT type_token, channel_token, user_name, message_text, message_timestamp FROM messages WHERE type_token = $1 AND channel_token = $2 ORDER BY message_timestamp", [req.params.type_token, req.params.channel_token], function(err, result) {
+  //console.log(db);
+  db.query("SELECT type_token, channel_token, user_name, user_ip, message_text, message_timestamp FROM messages WHERE type_token = $1 AND channel_token = $2", [req.params.type_token, req.params.channel_token], function(err, result) {
     if (err) {
       res.status(500).send(err);
     } else {
@@ -48,14 +48,25 @@ app.get('/:type_token', function (req, res) {
 
 //Create a new message
 app.post('/:type_token/:channel_token', function(req, res){
-  db.query("INSERT INTO messages (type_token, channel_token, user_name, message_text) VALUES ($1, $2, $3, $4)", [req.params.type_token, req.params.channel_token, req.body.user_name, req.body.message_text], function(err, result) {
-    if (err) {
-      if (err.code == "23502") {
-        err.explanation = "Didn't get all of the parameters in the request body. Send user_name and message_text in the request body (remember this is a POST request)."
+  var ipAddress = req.connection.remoteAddress;
+  db.query("SELECT COUNT(*) from messages WHERE user_ip = ($1) and message_timestamp >= now() - interval '10 second'", [ipAddress], function(err, result) {
+    if (err) { console.log(err) ; }
+    else {
+      if (result.rows[0].count <= 10){
+        db.query("INSERT INTO messages (type_token, channel_token, user_name, user_ip, message_text) VALUES ($1, $2, $3, $4, $5)", [req.params.type_token, req.params.channel_token, req.body.user_name, req.connection.remoteAddress, req.body.message_text], function(err, result) {
+          if (err) {
+            if (err.code == "23502") {
+              err.explanation = "Didn't get all of the parameters in the request body. Send user_name and message_text in the request body (remember this is a POST request)."
+            }
+            res.status(500).send(err);
+          } else {
+            res.send(result);
+          }
+        });
       }
-      res.status(500).send(err);
-    } else {
-      res.send(result);
+      else{
+        res.send("can't post");
+      }
     }
   });
 });

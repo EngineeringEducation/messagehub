@@ -18,6 +18,11 @@ pg.connect(conString, function(err, client) {
   }
 });
 
+app.use(function (req, res, next) {
+  console.log(req.path);
+  next();
+});
+
 // homepage
 app.get('/', function (req, res) {
   res.send('Tradecraft messagehub API.')
@@ -30,7 +35,6 @@ app.get('/chat', function (req, res) {
 
 //get all messages in a type's channel
 app.get('/:type_token/:channel_token', function (req, res) {
-  console.log(db);
   db.query("SELECT type_token, channel_token, user_name, message_text, message_timestamp FROM messages WHERE type_token = $1 AND channel_token = $2", [req.params.type_token, req.params.channel_token], function(err, result) {
     if (err) {
       res.status(500).send(err);

@@ -20,8 +20,14 @@
   </head>
   <body>
   <div class="container">
-      <h1>Hello, world!</h1>
-      <button class="btn">Check it out</button>
+      <div class="row">
+        <div class="col-md-3">Chat URL: <input type="text" value="/sample/code" id="chaturl"></div>
+        <div class="col-md-3">Username: <input type="text" value="liz" id="username"></div>
+        <div class="col-md-6" id="chatwindow"></div>
+      </div>
+      <div class="row">
+        Say: <input type="text" id="chat_input"> <button id="send_button" class="btn btn-primary">Send</button>
+      </div>
   </div>
     
 
@@ -30,10 +36,55 @@
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
     <script type="text/javascript">
+    //////////////////////
+    ////// EVENTS ////////
 
-    $('.btn').on('click', function (event) {
-      alert("Clicked!")
-    })
+    //send info to server
+    $('#send_button').on('click', function (event) {
+      var url = $("#chaturl").val();
+      var chat_input = $('#chat_input').val();
+      var username = $("#username").val();
+      $.post(url, {"user_name" : username, "message_text" : chat_input}, function(data, status){
+        console.log(data);
+        console.log(status);
+      })
+    });
+
+
+
+    ///////// DOM MANIPULATION ////////////
+    //from a username and a message_text string, return a DOM element
+    function createMessageRow (user_name, message_text) {
+      var messageRow = $('<div>' + user_name + ' : ' + message_text + '</div>')
+      messageRow.addClass("row");
+      return messageRow;
+    }
+
+
+
+    ///// DATA //////
+    function checkForNewMessages () {
+      var url = $("#chaturl").val();
+      $.getJSON(url, function (data, status) {
+        if (status=="success") {
+          $('#chatwindow').html("");
+          for (var i = 0; i < data.length; i++) {
+            var messageRow = createMessageRow(data[i].user_name, data[i].message_text)
+            $('#chatwindow').append(messageRow);
+          };
+        }
+      })
+    }
+
+
+    //////// MAIN EVENT LOOP ////////
+    function main() {
+      checkForConnectivity();
+      checkForNewMessages();
+      highlightWatchWords();
+    }
+    setInterval(main, 1000)
+
 
     </script>
 

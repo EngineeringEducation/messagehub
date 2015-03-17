@@ -23,6 +23,11 @@ app.get('/', function (req, res) {
   res.send('Tradecraft messagehub API.')
 });
 
+// homepage
+app.get('/chat', function (req, res) {
+  res.sendFile(__dirname + '/index.html');
+});
+
 //get all messages in a type's channel
 app.get('/:type_token/:channel_token', function (req, res) {
   console.log(db);

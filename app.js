@@ -23,6 +23,12 @@ app.get('/', function (req, res) {
   res.send('Tradecraft messagehub API.')
 });
 
+// Serve the backbone example
+app.get('/backbone', function (req, res) {
+  res.send('Tradecraft messagehub API.')
+});
+
+
 //get all messages in a type's channel
 app.get('/:type_token/:channel_token', function (req, res) {
   console.log(db);

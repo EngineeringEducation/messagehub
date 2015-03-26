@@ -25,7 +25,7 @@ app.get('/', function (req, res) {
 
 // Serve the backbone example
 app.get('/backbone', function (req, res) {
-  res.send('Tradecraft messagehub API.')
+  res.sendFile(__dirname + "/backbone.html");
 });
 
 
